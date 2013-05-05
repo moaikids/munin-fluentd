@@ -1,0 +1,52 @@
+import urllib2
+import os
+import sys
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
+
+def get_metrics(host, port):
+    ret = urllib2.urlopen( "http://" + host + ":" + str(port) + "/api/plugins" ).read()
+    return parse(ret)
+
+def parse(vals):
+    params = [];
+    for val in vals.splitlines():
+        param = {}
+        for p in val.split():
+            if "plugin_id:" in p:
+                k,v,i = p.split(':')
+                param[k] = i
+            else:
+                k,v = p.split(':')
+                param[k] = v
+        params.append(param)
+    return params
+
+def munin(host, port):
+    params = get_metrics(host, port)
+    for param in params:
+        if param.pop('output_plugin') != 'true':
+            continue
+        id = param.pop('plugin_id')
+        type = param.pop('type')
+        for k in param:
+            print type + "_" + id + "_" + k + ".value " + param[k]
+
+if __name__ == "__main__":
+    if os.environ.get('host'):
+        host = os.environ.get('host')
+    else: 
+        host = 'localhost'
+
+    if os.environ.get('port'):
+        port = os.environ.get('port')
+    else: 
+        port = 24220
+
+    munin(host, port)
+
+
