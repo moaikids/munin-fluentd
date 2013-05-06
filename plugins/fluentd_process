@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+import os
+import sys
+import subprocess
+
+def get_metrics(condition):
+    if condition == None:
+        return 0
+    out, err = subprocess.Popen("ps -ewf | " + condition , shell=True, stdout=subprocess.PIPE).communicate()
+    ret = out.splitlines()
+    return len(ret)
+
+def munin(condition):
+    count = get_metrics(condition)
+    print "process.value " + str(count)
+
+def config():
+    print "graph_title fluentd process count"
+    print "graph_category fluentd"
+
+if __name__ == "__main__":
+    if os.environ.get('package'):
+        package = os.environ.get('package')
+    else: 
+        package = 'fluentd'
+
+    if package == "fluentd":
+        condition = " grep ruby | grep fluentd | grep -v grep "
+    elif package == "td-agent":
+        condition = " grep ruby | grep td-agent | grep -v grep "
+    else: 
+        condition = os.environ.get('condition')
+
+    if len(sys.argv) > 1 and sys.argv[1] == "config":
+        config()
+    else:
+        munin(condition)
+
+
