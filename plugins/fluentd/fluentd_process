@@ -18,6 +18,8 @@ def munin(condition):
 def config():
     print "graph_title fluentd process count"
     print "graph_category fluentd"
+    print "process.label process"
+    print "process.draw LINE1"
 
 if __name__ == "__main__":
     if os.environ.get('package'):

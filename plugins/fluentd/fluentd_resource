@@ -28,6 +28,16 @@ def munin(condition):
     print "size.value " + str(size)
     print "rss.value " + str(rss)
 
+    print "cpu.label cpu"
+    print "cpu.draw LINE1"
+    print "mem.label mem"
+    print "mem.draw LINE1"
+    print "size.label size"
+    print "size.draw LINE1"
+    print "rss.label rss"
+    print "rss.draw LINE1"
+
+
 def config():
     print "graph_title fluentd resource usage"
     print "graph_category fluentd"
