@@ -28,6 +28,10 @@ def munin(condition):
     print "size.value " + str(size)
     print "rss.value " + str(rss)
 
+def config():
+    print "graph_title fluentd resource usage"
+    print "graph_category fluentd"
+
     print "cpu.label cpu"
     print "cpu.draw LINE1"
     print "mem.label mem"
@@ -36,11 +40,6 @@ def munin(condition):
     print "size.draw LINE1"
     print "rss.label rss"
     print "rss.draw LINE1"
-
-
-def config():
-    print "graph_title fluentd resource usage"
-    print "graph_category fluentd"
 
 if __name__ == "__main__":
     if os.environ.get('package'):

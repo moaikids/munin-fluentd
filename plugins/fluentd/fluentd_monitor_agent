@@ -6,9 +6,9 @@ import sys
 
 def get_metrics(host, port):
     ret = urllib2.urlopen( "http://" + host + ":" + str(port) + "/api/plugins" ).read()
-    return parse(ret)
+    return parse_param(ret)
 
-def parse(vals):
+def parse_param(vals):
     params = [];
     for val in vals.splitlines():
         param = {}
@@ -22,33 +22,45 @@ def parse(vals):
         params.append(param)
     return params
 
-def munin(host, port):
-    params = get_metrics(host, port)
-    plugin_counter = {}
-    for param in params:
-        if param.pop('output_plugin') != 'true':
-            continue
-        id = param.pop('plugin_id')
-        type = None
-        if "type" in param.keys():
-            type = param.pop('type')
-        if type == None:
-            continue
+def parse_line(param):
+    if param.pop('output_plugin') != 'true':
+        return None, None, None, param
+    id = param.pop('plugin_id')
+    type = None
+    if "type" in param.keys():
+        type = param.pop('type')
+
+    if type:
         num_id = 1
         if type in plugin_counter.keys():
             num_id = plugin_counter[type] + 1
             plugin_counter[type] = num_id
         else:
             plugin_counter[type] = num_id
+    return id, type, num_id, param
 
-        for k in param:
-            print type + "_" + str(num_id) + "_" + k + ".value " + param[k]
+def munin(host, port):
+    params = get_metrics(host, port)
+    for param in params:
+        id, type, num_id, param = parse_line(param)
+        if type:
+            for k in param:
+                print type + "_" + str(num_id) + "_" + k + ".value " + param[k]
 
-def config():
+def config(host, port):
     print "graph_title fluentd monitor_agent usage"
     print "graph_category fluentd"
+    
+    params = get_metrics(host, port)
+    for param in params:
+        id, type, num_id, param = parse_line(param)
+        if type:
+            for k in param:
+                print type + "_" + str(num_id) + "_" + k + ".label " + type + "_" + str(num_id) + "_" + k
+                print type + "_" + str(num_id) + "_" + k + ".draw LINE1"
 
 
+plugin_counter = {}
 if __name__ == "__main__":
     if os.environ.get('host'):
         host = os.environ.get('host')
@@ -61,7 +73,7 @@ if __name__ == "__main__":
         port = 24220
 
     if len(sys.argv) > 1 and sys.argv[1] == "config":
-        config()
+        config(host, port)
     else:
         munin(host, port)
 
