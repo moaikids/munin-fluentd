@@ -30,8 +30,8 @@ def parse_line(param):
     if "type" in param.keys():
         type = param.pop('type')
 
+    num_id = 1
     if type:
-        num_id = 1
         if type in plugin_counter.keys():
             num_id = plugin_counter[type] + 1
             plugin_counter[type] = num_id
