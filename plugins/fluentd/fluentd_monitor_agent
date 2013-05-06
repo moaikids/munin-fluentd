@@ -29,11 +29,15 @@ def munin(host, port):
         if param.pop('output_plugin') != 'true':
             continue
         id = param.pop('plugin_id')
-        type = param.pop('type')
+        type = None
+        if "type" in param.keys():
+            type = param.pop('type')
+        if type == None:
+            continue
         num_id = 1
         if type in plugin_counter.keys():
-            num_id = plugin_counter[type]
-            plugin_counter[type] = num_id + 1
+            num_id = plugin_counter[type] + 1
+            plugin_counter[type] = num_id
         else:
             plugin_counter[type] = num_id
 
