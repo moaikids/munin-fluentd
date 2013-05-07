@@ -39,16 +39,20 @@ def parse_line(param):
             plugin_counter[type] = num_id
     return id, type, num_id, param
 
-def munin(host, port):
+def munin(host, port, target=None):
     params = get_metrics(host, port)
     for param in params:
         id, type, num_id, param = parse_line(param)
         if type:
             for k in param:
-                print type + "_" + str(num_id) + "_" + k + ".value " + param[k]
+                if target == None or target == k:
+                    print type + "_" + str(num_id) + "_" + k + ".value " + param[k]
 
-def config(host, port):
-    print "graph_title fluentd monitor_agent usage"
+def config(host, port, target=None):
+    if target:
+        print "graph_title fluentd monitor_agent(" + target + ")"
+    else: 
+        print "graph_title fluentd monitor_agent usage"
     print "graph_category fluentd"
     
     params = get_metrics(host, port)
@@ -56,12 +60,18 @@ def config(host, port):
         id, type, num_id, param = parse_line(param)
         if type:
             for k in param:
-                print type + "_" + str(num_id) + "_" + k + ".label " + type + "_" + str(num_id) + "_" + k
-                print type + "_" + str(num_id) + "_" + k + ".draw LINE1"
+                if target == None or target == k:
+                    print type + "_" + str(num_id) + "_" + k + ".label " + type + "_" + str(num_id) + "_" + k
+                    print type + "_" + str(num_id) + "_" + k + ".draw LINE1"
 
 
 plugin_counter = {}
 if __name__ == "__main__":
+    file_name = os.path.basename(__file__)
+    target = None
+    if file_name.startswith("fluentd_monitor_agent_"):
+        target = file_name[len("fluentd_monitor_agent_"):]
+
     if os.environ.get('host'):
         host = os.environ.get('host')
     else: 
@@ -73,8 +83,8 @@ if __name__ == "__main__":
         port = 24220
 
     if len(sys.argv) > 1 and sys.argv[1] == "config":
-        config(host, port)
+        config(host, port, target)
     else:
-        munin(host, port)
+        munin(host, port, target)
 
 

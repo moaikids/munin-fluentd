@@ -21,27 +21,43 @@ def get_metrics(condition):
     
     return cpu, mem, size, rss
 
-def munin(condition):
+def munin(condition, target):
     cpu,mem,size,rss = get_metrics(condition)
-    print "cpu.value " + str(cpu)
-    print "mem.value " + str(mem)
-    print "size.value " + str(size)
-    print "rss.value " + str(rss)
+    enable_share = target == None or target == "share"
+    enable_size = target == None or target == "size"
+    if enable_share:
+        print "cpu.value " + str(cpu)
+        print "mem.value " + str(mem)
+    if enable_size:
+        print "size.value " + str(size)
+        print "rss.value " + str(rss)
 
-def config():
-    print "graph_title fluentd resource usage"
+def config(target):
+    if target:
+        print "graph_title fluentd resource(" + target + ")"
+    else:
+        print "graph_title fluentd resource usage"
     print "graph_category fluentd"
-
-    print "cpu.label cpu"
-    print "cpu.draw LINE1"
-    print "mem.label mem"
-    print "mem.draw LINE1"
-    print "size.label size"
-    print "size.draw LINE1"
-    print "rss.label rss"
-    print "rss.draw LINE1"
+    
+    enable_share = target == None or target == "share"
+    enable_size = target == None or target == "size"
+    if enable_share:
+        print "cpu.label cpu"
+        print "cpu.draw LINE1"
+        print "mem.label mem"
+        print "mem.draw LINE1"
+    if enable_size:
+        print "size.label size"
+        print "size.draw LINE1"
+        print "rss.label rss"
+        print "rss.draw LINE1"
 
 if __name__ == "__main__":
+    file_name = os.path.basename(__file__)
+    target = None
+    if file_name.startswith("fluentd_resource_"):
+        target = file_name[len("fluentd_resource_"):]
+
     if os.environ.get('package'):
         package = os.environ.get('package')
     else: 
@@ -55,8 +71,8 @@ if __name__ == "__main__":
         condition = os.environ.get('condition')
 
     if len(sys.argv) > 1 and sys.argv[1] == "config":
-        config()
+        config(target)
     else:
-        munin(condition)
+        munin(condition, target)
 
 
